@@ -1,0 +1,10 @@
+{
+    "discord": {
+        "token": "",
+        "prefix": ""
+    },
+    "yandex-music": {
+        "login": "",
+        "password": ""
+    }
+}
