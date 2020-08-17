@@ -1,11 +1,11 @@
 import json
 import logging
 from audio import Audio
-from player_pool import PlayerPool
 from yandex_music import Client
-from discord.ext.commands import Bot
+from discord.ext.commands import Bot, check, CheckFailure
+from player import Player, PlayerPool
 
-with open('settings.json', 'r') as f:
+with open('config.json', 'r') as f:
     data = json.load(f)
 
 TOKEN = data['discord']['token']
@@ -20,15 +20,40 @@ logging.basicConfig(level=logging.CRITICAL)
 bot = Bot(command_prefix=BOT_PREFIX)
 player_pool = PlayerPool(bot)
 
+async def author_in_channel(ctx):
+    if not ctx.author.voice:
+        raise CheckFailure('You are not in any channel')
+    
+    return True
+     
+async def same_channel(ctx):
+    if ctx.author.voice.channel != ctx.me.voice.channel:
+        raise CheckFailure('You have to be in the same channel')
+    
+    return True
+    
+async def me_in_channel(ctx):
+    if not ctx.me.voice:
+        raise CheckFailure(f'I am not in any channel, use {BOT_PREFIX}join to connect')        
+
+    return True
+
 @bot.event
 async def on_ready():
     print('Logged in ' + bot.user.name + '\n')
 
-@bot.command(aliases=['j', 'jo'])
-async def join(ctx):
-    if not ctx.author.voice:
-        await ctx.send(f'You are not in any channel')
+@bot.event
+async def on_command_error(ctx, error):
+    e = getattr(error, 'original', error)
+    
+    if isinstance(e, CheckFailure):
+        await ctx.send(str(e))
+    else:
+        raise e
 
+@bot.command(aliases=['j', 'jo'])
+@check(author_in_channel)
+async def join(ctx):
     voice_channel = ctx.author.voice.channel
     if not ctx.voice_client:
         voice_client = await voice_channel.connect()
@@ -37,32 +62,19 @@ async def join(ctx):
           
     await ctx.send(f'{bot.user.name} has connected to {voice_channel}')
 
- 
 @bot.command(aliases=['l', 'lv'])
+@check(author_in_channel)
+@check(me_in_channel)
 async def leave(ctx):
-    if ctx.author.voice is None:
-        await ctx.send('You are not in any channel')        
-    
-    if ctx.me.voice is None:
-        await ctx.send('I am not in one channel.\nUse bot.join to connect')
-
     voice_channel = ctx.author.voice.channel
     await ctx.voice_client.disconnect()
     await ctx.send(f'{bot.user.name} has left {voice_channel}')
 
 @bot.command(aliases=['p', 'pl'])
-async def play(ctx, *args):    
-    if ctx.author.voice is None:
-        await ctx.send('You are not in any channel')
-        return
-    
-    if ctx.me.voice is None:
-        await join(ctx)
-
-    if ctx.author.voice.channel != ctx.me.voice.channel:
-        await ctx.send('You have to be in the same channel')
-        return
-    
+@check(author_in_channel)
+@check(me_in_channel)
+@check(same_channel)
+async def play(ctx, *args):        
     player = player_pool.get(ctx.guild)
     search_str = ' '.join(args)    
     search_result = y_client.search(search_str)
@@ -71,18 +83,10 @@ async def play(ctx, *args):
     await player.play(audio)
 
 @bot.command()
+@check(author_in_channel)
+@check(me_in_channel)
+@check(same_channel)
 async def playlist(ctx, *args):    
-    if ctx.author.voice is None:
-        await ctx.send('You are not in any channel')
-        return
-    
-    if ctx.me.voice is None:
-        await join(ctx)
-
-    if ctx.author.voice.channel != ctx.me.voice.channel:
-        await ctx.send('You have to be in the same channel')        
-        return
-
     player = player_pool.get(ctx.guild)
     try:
         search_args = [str(args[0]), int(args[1])]
@@ -100,40 +104,41 @@ async def playlist(ctx, *args):
 
     await player.playlist(audio)
 
-          
 @bot.command(aliases=['pau', 'ps'])
+@check(author_in_channel)
+@check(me_in_channel)
+@check(same_channel)
 async def pause(ctx): 
     player = player_pool.get(ctx.guild)
     await player.pause()
     await ctx.send("Music has stopped")
 
 @bot.command(aliases=['clr'])
+@check(author_in_channel)
+@check(me_in_channel)
+@check(same_channel)
 async def clear(ctx): 
     player = player_pool.get(ctx.guild)
     await player.clear()
     await ctx.send("Queue is clear")
 
 @bot.command(aliases=['n', 'skip'])
+@check(author_in_channel)
+@check(me_in_channel)
+@check(same_channel)
 async def next(ctx):
     player = player_pool.get(ctx.guild)
     await player.next()
     await ctx.send("Next track")
 
 @bot.command(aliases=['r', 'rsm'])
-async def resume(ctx): 
+@check(author_in_channel)
+@check(me_in_channel)
+@check(same_channel)
+async def resume(ctx):
     player = player_pool.get(ctx.guild)
     await player.resume()
     await ctx.send("Music has resumed")
-
-#future
-def catch(self, *args, **kwargs):
-    try:
-        def decorator(func):            
-            func()
-    except expression as identifier:
-        pass 
-    
-    return decorator
 
 if __name__ == "__main__":    
     bot.run(TOKEN)
