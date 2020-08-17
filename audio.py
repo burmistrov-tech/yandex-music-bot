@@ -9,9 +9,16 @@ class Audio():
     @property
     def file_name(self) -> str:
         if self.track.albums:
-            return f"{self.track.id}_{self.track.albums[0].id}.mp3"
+            return f'{self.track.id}_{self.track.albums[0].id}.mp3'
 
         return f"{self.track.id}.mp3"
+    
+    @property
+    def full_title(self) -> str:
+        title = self.track.title
+        artists = ', '.join(a.name for a in self.track.artists if a.name)
+        
+        return f'{title} {artists}'
 
     def get(self) -> FFmpegPCMAudio:
         if not os.path.isfile(self.file_name):

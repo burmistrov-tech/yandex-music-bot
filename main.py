@@ -111,7 +111,7 @@ async def playlist(ctx, *args):
 async def pause(ctx): 
     player = player_pool.get(ctx.guild)
     await player.pause()
-    await ctx.send("Music has stopped")
+    await ctx.send('Music has stopped')
 
 @bot.command(aliases=['clr'])
 @check(author_in_channel)
@@ -120,7 +120,7 @@ async def pause(ctx):
 async def clear(ctx): 
     player = player_pool.get(ctx.guild)
     await player.clear()
-    await ctx.send("Queue is clear")
+    await ctx.send('Queue is clear')
 
 @bot.command(aliases=['n', 'skip'])
 @check(author_in_channel)
@@ -129,7 +129,7 @@ async def clear(ctx):
 async def next(ctx):
     player = player_pool.get(ctx.guild)
     await player.next()
-    await ctx.send("Next track")
+    await ctx.send('Next track')
 
 @bot.command(aliases=['r', 'rsm'])
 @check(author_in_channel)
@@ -138,7 +138,18 @@ async def next(ctx):
 async def resume(ctx):
     player = player_pool.get(ctx.guild)
     await player.resume()
-    await ctx.send("Music has resumed")
+    await ctx.send('Music has resumed')
+
+@bot.command(alaliases=['mix'])
+@check(author_in_channel)
+@check(me_in_channel)
+@check(same_channel)
+async def shuffle(ctx):
+    player = player_pool.get(ctx.guild)
+    await player.shuffle()
+    audio = await player.queue()
+    titles = '\n'.join(a.full_title for a in audio)
+    await ctx.send('Tracks are mixed, here are the next 10 tracks:\n'+titles)
 
 if __name__ == "__main__":    
     bot.run(TOKEN)
