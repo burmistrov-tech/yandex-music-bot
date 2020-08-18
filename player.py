@@ -3,24 +3,41 @@ from typing import List
 from asyncio import Event
 from random import shuffle
 from yandex_music import Track
-from discord import utils
+from discord import utils, PCMVolumeTransformer
 from discord.voice_client import VoiceClient
 from discord.ext.commands import Bot, check, CheckFailure
 
 class Player():        
     def __init__(self, voice_client: VoiceClient):
         self.voice_client = voice_client
-        self.state = Event()
         self.audio_list = list()
-    
+        self.state = Event()
+        self._volume = 0.5 
+
     async def _run(self):
         while self.audio_list:
             self.state.clear()   
             audio = self.audio_list.pop(0)
             source = audio.get()
-            self.voice_client.play(source, after = self.toogle_next) 
+            source.volume = self._volume         
+            self.voice_client.play(source, after = self.toogle_next)            
+            self.voice_client.source = PCMVolumeTransformer(self.voice_client.source)
+            self.voice_client.source.volume = self.volume
             print(f'voice client начал проигрывание {audio.track.title}')
             await self.state.wait() 
+
+    @property
+    def volume(self):
+        return self._volume
+    
+    @volume.setter
+    def volume(self, value: float):
+        if not 0 <= value <= 100:                    
+            raise CheckFailure('The value must be between 0 and 100')        
+        
+        self._volume = value / 100
+        if self.is_playing(exception=False):
+            self.voice_client.source.volume = self.volume
 
     def toogle_next(self, error: Exception = None, *args):
         self.state.set()
@@ -75,10 +92,6 @@ class Player():
     
     async def queue(self, amount: int = 10) -> List[Audio]:
         return self.audio_list[:amount]
-
-    # future
-    async def volume(self):
-        pass
 
     async def shuffle(self):
         self.is_empty()

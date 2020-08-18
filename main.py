@@ -113,6 +113,16 @@ async def pause(ctx):
     await player.pause()
     await ctx.send('Music has stopped')
 
+@bot.command()
+@check(author_in_channel)
+@check(me_in_channel)
+@check(same_channel)
+async def volume(ctx, *args):
+    value = float(args[0])
+    player = player_pool.get(ctx.guild)
+    player.volume = value
+    await ctx.send(f'Changed volume to {value}%')
+
 @bot.command(aliases=['clr'])
 @check(author_in_channel)
 @check(me_in_channel)
