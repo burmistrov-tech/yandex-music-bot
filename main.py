@@ -3,7 +3,7 @@ import logging
 from audio import Audio
 from yandex_music import Client
 from discord.ext.commands import Bot, check, CheckFailure
-from player import Player, PlayerPool
+from player import *
 
 with open('config.json', 'r') as f:
     data = json.load(f)
