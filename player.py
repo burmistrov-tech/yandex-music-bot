@@ -1,6 +1,7 @@
 from audio import Audio
 from typing import List
 from asyncio import Event
+from random import shuffle
 from yandex_music import Track
 from discord import utils
 from discord.voice_client import VoiceClient
@@ -9,38 +10,53 @@ from discord.ext.commands import Bot, check, CheckFailure
 class Player():        
     def __init__(self, voice_client: VoiceClient):
         self.voice_client = voice_client
-        self.state = Event()
         self.audio_list = list()
-    
+        self.state = Event()
+        self._volume = 0.5 
+
     async def _run(self):
         while self.audio_list:
             self.state.clear()   
             audio = self.audio_list.pop(0)
             source = audio.get()
-            self.voice_client.play(source, after = self.toogle_next) 
+            source.volume = self.volume         
+            self.voice_client.play(source, after = self.toogle_next)
             print(f'voice client начал проигрывание {audio.track.title}')
             await self.state.wait() 
 
-    def toogle_next(self, error = None, *args):
+    @property
+    def volume(self):
+        return self._volume
+    
+    @volume.setter
+    def volume(self, value: float):
+        if not 0 <= value <= 100:                    
+            raise CheckFailure('The value must be between 0 and 100')        
+        
+        self._volume = value / 100
+        if self.is_playing(exception=False):
+            self.voice_client.source.volume = self.volume
+
+    def toogle_next(self, error: Exception = None, *args):
         self.state.set()
         if error:
             raise(error)                
 
-    def is_playing(self, exception = True):
+    def is_playing(self, exception: bool = True):
         if not self.voice_client.is_playing():
             if exception:            
                 raise CheckFailure('Bot is not playing')
             return False
         return True
 
-    def is_paused(self, exception = True):                    
+    def is_paused(self, exception: bool = True):                    
         if not self.voice_client.is_paused():
             if exception:                
                 raise CheckFailure('Bot has not paused')            
             return False
         return True
 
-    def is_empty(self, exception = True):        
+    def is_empty(self, exception: bool = True):        
         if not len(self.audio_list):
             if exception:
                 raise CheckFailure('No music in the queue')
@@ -71,18 +87,13 @@ class Player():
         
     async def next(self):
         self.voice_client.stop()        
+    
+    async def queue(self, amount: int = 10) -> List[Audio]:
+        return self.audio_list[:amount]
 
-    # future
-    async def queue(self):
-        pass
-
-    # future
-    async def volume(self):
-        pass
-
-    # future
     async def shuffle(self):
-        pass
+        self.is_empty()
+        shuffle(self.audio_list)
 
 class PlayerPool():
     def __init__(self, bot: Bot):
