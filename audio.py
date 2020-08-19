@@ -1,6 +1,6 @@
 import os
 from yandex_music import Track
-from discord import FFmpegPCMAudio
+from discord import FFmpegPCMAudio, PCMVolumeTransformer
 
 class Audio():
     def __init__(self, track: Track):
@@ -20,8 +20,8 @@ class Audio():
         
         return f'{title} {artists}'
 
-    def get(self) -> FFmpegPCMAudio:
+    def get(self) -> PCMVolumeTransformer:
         if not os.path.isfile(self.file_name):
             self.track.download(self.file_name)
 
-        return FFmpegPCMAudio(self.file_name)
+        return PCMVolumeTransformer(FFmpegPCMAudio(self.file_name))

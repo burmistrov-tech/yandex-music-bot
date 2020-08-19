@@ -3,7 +3,7 @@ from typing import List
 from asyncio import Event
 from random import shuffle
 from yandex_music import Track
-from discord import utils, PCMVolumeTransformer
+from discord import utils
 from discord.voice_client import VoiceClient
 from discord.ext.commands import Bot, check, CheckFailure
 
@@ -19,10 +19,8 @@ class Player():
             self.state.clear()   
             audio = self.audio_list.pop(0)
             source = audio.get()
-            source.volume = self._volume         
-            self.voice_client.play(source, after = self.toogle_next)            
-            self.voice_client.source = PCMVolumeTransformer(self.voice_client.source)
-            self.voice_client.source.volume = self.volume
+            source.volume = self.volume         
+            self.voice_client.play(source, after = self.toogle_next)
             print(f'voice client начал проигрывание {audio.track.title}')
             await self.state.wait() 
 
