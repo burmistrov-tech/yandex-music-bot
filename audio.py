@@ -22,6 +22,6 @@ class Audio():
 
     def get(self) -> PCMVolumeTransformer:
         if not os.path.isfile(self.file_name):
-            self.track.download(self.file_name)
+            self.track.download(self.file_name, bitrate_in_kbps=192)
 
         return PCMVolumeTransformer(FFmpegPCMAudio(self.file_name))
