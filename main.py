@@ -1,6 +1,7 @@
 import json
 import logging
 from audio import Audio
+from itertools import count
 from yandex_music import Client
 from discord.ext.commands import Bot, check, CheckFailure
 from player import *
@@ -132,11 +133,11 @@ async def clear(ctx):
     await player.clear()
     await ctx.send('Queue is clear')
 
-@bot.command(aliases=['n', 'skip'])
+@bot.command(aliases=['n', 'next'])
 @check(author_in_channel)
 @check(me_in_channel)
 @check(same_channel)
-async def next(ctx):
+async def skip(ctx):
     player = player_pool.get(ctx.guild)
     await player.next()
     await ctx.send('Next track')
@@ -157,9 +158,19 @@ async def resume(ctx):
 async def shuffle(ctx):
     player = player_pool.get(ctx.guild)
     await player.shuffle()
-    audio = await player.queue()
-    titles = '\n'.join(a.full_title for a in audio)
+    queue, iter = await player.queue(10), count(1)
+    titles = '\n'.join(f'{next(iter)}. {i.full_title}' for i in queue)
     await ctx.send('Tracks are mixed, here are the next 10 tracks:\n'+titles)
+
+@bot.command()
+@check(author_in_channel)
+@check(me_in_channel)
+@check(same_channel)
+async def queue(ctx, amount: int = 10):
+    player = player_pool.get(ctx.guild)
+    queue, iter = await player.queue(amount), count(1)
+    titles = '\n'.join(f'{next(iter)}. {i.full_title}' for i in queue)
+    await ctx.send(f'Next {len(queue)} tracks:\n'+titles)
 
 if __name__ == "__main__":    
     bot.run(TOKEN)
