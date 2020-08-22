@@ -78,7 +78,7 @@ async def leave(ctx):
 async def play(ctx, *args):        
     player = player_pool.get(ctx.guild)
     search_str = ' '.join(args)    
-    search_result = y_client.search(search_str)
+    search_result = y_client.search(search_str, 'track')
     track = search_result.tracks.results[0]    
     audio = Audio(track)
     await player.play(audio)
