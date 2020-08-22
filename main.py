@@ -151,7 +151,7 @@ async def resume(ctx):
     await player.resume()
     await ctx.send('Resumed')
 
-@bot.command(alaliases=['mix'])
+@bot.command(aliases=['mix'])
 @check(author_in_channel)
 @check(me_in_channel)
 @check(same_channel)
