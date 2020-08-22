@@ -23,7 +23,7 @@ player_pool = PlayerPool(bot)
 
 async def author_in_channel(ctx):
     if not ctx.author.voice:
-        raise CheckFailure('You are not in any channel')
+        raise CheckFailure('You have to be in a voice channel')
     
     return True
      
@@ -35,13 +35,13 @@ async def same_channel(ctx):
     
 async def me_in_channel(ctx):
     if not ctx.me.voice:
-        raise CheckFailure(f'I am not in any channel, use {BOT_PREFIX}join to connect')        
+        raise CheckFailure(f'I am not in any channel, use "{BOT_PREFIX}join" to connect')        
 
     return True
 
 @bot.event
 async def on_ready():
-    print('Logged in ' + bot.user.name + '\n')
+    print(f'Logged in {bot.user.name}')
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -52,7 +52,7 @@ async def on_command_error(ctx, error):
     else:
         raise e
 
-@bot.command(aliases=['j', 'jo'])
+@bot.command(aliases=['j'])
 @check(author_in_channel)
 async def join(ctx):
     voice_channel = ctx.author.voice.channel
@@ -61,17 +61,17 @@ async def join(ctx):
     else:
         await voice_client.move_to(voice_channel)
           
-    await ctx.send(f'{bot.user.name} has connected to {voice_channel}')
+    await ctx.send(f'Successfully connected to {voice_channel}')
 
-@bot.command(aliases=['l', 'lv'])
+@bot.command(aliases=['l', 'exit'])
 @check(author_in_channel)
 @check(me_in_channel)
 async def leave(ctx):
     voice_channel = ctx.author.voice.channel
     await ctx.voice_client.disconnect()
-    await ctx.send(f'{bot.user.name} has left {voice_channel}')
+    await ctx.send(f'Successfully disconnected from {voice_channel}')
 
-@bot.command(aliases=['p', 'pl'])
+@bot.command(aliases=['p'])
 @check(author_in_channel)
 @check(me_in_channel)
 @check(same_channel)
@@ -82,6 +82,7 @@ async def play(ctx, *args):
     track = search_result.tracks.results[0]    
     audio = Audio(track)
     await player.play(audio)
+    await ctx.send(f'{audio.full_title} is playing now')
 
 @bot.command()
 @check(author_in_channel)
@@ -96,23 +97,22 @@ async def playlist(ctx, *args):
 
     search_result = y_client.users_playlists_list(search_args[0])
     playlist = search_result[0]
-    await ctx.send('Downloading tracks')
-
     short_tracks = y_client.users_playlists(search_args[1], playlist.uid)[0].tracks
     tracks_id = [st.track_id for st in short_tracks]
     tracks = y_client.tracks(tracks_id)
     audio = [Audio(t) for t in tracks]
 
     await player.playlist(audio)
+    await ctx.send(f'{len(tracks)} tracks added to the queue\n{audio[0].full_title} is playing now')
 
-@bot.command(aliases=['pau', 'ps'])
+@bot.command()
 @check(author_in_channel)
 @check(me_in_channel)
 @check(same_channel)
 async def pause(ctx): 
     player = player_pool.get(ctx.guild)
     await player.pause()
-    await ctx.send('Music has stopped')
+    await ctx.send('Paused')
 
 @bot.command()
 @check(author_in_channel)
@@ -121,17 +121,17 @@ async def pause(ctx):
 async def volume(ctx, *args):
     value = float(args[0])
     player = player_pool.get(ctx.guild)
-    player.volume = value
-    await ctx.send(f'Changed volume to {value}%')
+    player.volume = value   
+    await ctx.send(f'Changed the volume to {value}%')
 
-@bot.command(aliases=['clr'])
+@bot.command(aliases=['c', 'clr'])
 @check(author_in_channel)
 @check(me_in_channel)
 @check(same_channel)
 async def clear(ctx): 
     player = player_pool.get(ctx.guild)
     await player.clear()
-    await ctx.send('Queue is clear')
+    await ctx.send('The queue cleared')
 
 @bot.command(aliases=['n', 'next'])
 @check(author_in_channel)
@@ -142,14 +142,14 @@ async def skip(ctx):
     await player.next()
     await ctx.send('Next track')
 
-@bot.command(aliases=['r', 'rsm'])
+@bot.command(aliases=['r'])
 @check(author_in_channel)
 @check(me_in_channel)
 @check(same_channel)
 async def resume(ctx):
     player = player_pool.get(ctx.guild)
     await player.resume()
-    await ctx.send('Music has resumed')
+    await ctx.send('Resumed')
 
 @bot.command(alaliases=['mix'])
 @check(author_in_channel)
@@ -169,6 +169,9 @@ async def shuffle(ctx):
 async def queue(ctx, amount: int = 10):
     player = player_pool.get(ctx.guild)
     queue, iter = await player.queue(amount), count(1)
+    if not queue:
+        await ctx.send('The queue is empty')
+
     titles = '\n'.join(f'{next(iter)}. {i.full_title}' for i in queue)
     await ctx.send(f'Next {len(queue)} tracks:\n'+titles)
 
