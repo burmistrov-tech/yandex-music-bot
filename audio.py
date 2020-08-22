@@ -18,7 +18,7 @@ class Audio():
         title = self.track.title
         artists = ', '.join(a.name for a in self.track.artists if a.name)
         
-        return f'{title} {artists}'
+        return f'{title} - {artists}'
 
     def get(self) -> PCMVolumeTransformer:
         if not os.path.isfile(self.file_name):

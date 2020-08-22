@@ -31,7 +31,7 @@ class Player():
     @volume.setter
     def volume(self, value: float):
         if not 0 <= value <= 100:                    
-            raise CheckFailure('The value must be between 0 and 100')        
+            raise CheckFailure('The value have to be between 0 and 100')        
         
         self._volume = value / 100
         if self.is_playing(exception=False):
