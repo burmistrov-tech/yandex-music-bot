@@ -27,7 +27,7 @@ def check_all(*checks):
 def author_in_channel():
     async def predicate(ctx):
         if ctx.author.voice is None:
-            raise MissingInChannel('You have to be in the same channel')
+            raise MissingInChannel('You have to be in the voice channel')
 
         return True
     return check(predicate)
@@ -36,7 +36,7 @@ def author_in_channel():
 def bot_in_channel():
     async def predicate(ctx):
         if ctx.me.voice is None:
-            raise MissingInChannel(f'Bot in any channel, use \
+            raise MissingInChannel(f'Bot is not in any voice channel, use \
                 "{ctx.bot.command_prefix}"join" to connect')
 
         return True
@@ -46,7 +46,7 @@ def bot_in_channel():
 def in_same_channel():
     async def predicate(ctx):
         if ctx.author.voice.channel != ctx.me.voice.channel:
-            raise SameChannelsError('You have to be in the same channel')
+            raise SameChannelsError('You have to be in the same voice channel')
 
         return True
     return check(predicate)
