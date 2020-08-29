@@ -43,36 +43,36 @@ class Player():
         self._state.set()
         if error:
             raise(error)              
-
+    @property
     def is_playing(self) -> bool:
         return self.voice_client.is_playing()
-
+    @property
     def is_paused(self) -> bool:                    
         return self.voice_client.is_paused()
-
+    @property
     def is_empty(self) -> bool:        
         return len(self.audio_list) > 0
-
+    
     async def play(self, audio: Audio):
         self.audio_list.append(audio)
 
-        if not self.is_playing():
+        if not self.is_playing:
             await self._run()
 
     async def playlist(self, audio: List[Audio]):
         self.audio_list.extend(audio)
         
-        if not self.is_playing():
+        if not self.is_playing:
             await self._run()
 
     async def clear(self):
-        if self.is_empty():
+        if self.is_empty:
             raise PlayerQueueEmpty()
 
         self.audio_list.clear()
 
     async def pause(self):
-        if self.is_playing():
+        if self.is_playing:
             raise PlayerInvalidState('Bot is not playing')
 
         self.voice_client.pause()
@@ -87,13 +87,13 @@ class Player():
             raise PlayerInvalidState('Bot is not playing or paused')        
 
     async def resume(self):
-        if self.is_paused():
+        if self.is_paused:
             raise PlayerInvalidState('Bot has not paused')
 
         self.voice_client.resume()
         
     async def skip(self):
-        if self.is_playing() or self.is_paused():
+        if self.is_playing or self.is_paused:
             self.voice_client.stop()
         else:
             raise PlayerInvalidState('Bot is not playing or paused')
@@ -103,7 +103,7 @@ class Player():
         return self.audio_list[:amount]
 
     async def shuffle(self):
-        if self.is_empty():
+        if self.is_empty:
             raise PlayerQueueEmpty()
 
         random.shuffle(self.audio_list)
