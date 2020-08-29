@@ -81,12 +81,12 @@ class Player():
     async def stop(self):
         try:
             await self.clear()
-
-        if self.is_playing or self.is_paused:
-            self.voice_client.stop()
-        else:
-            raise PlayerInvalidState('Bot is not playing or paused')        
-        
+        finally:
+            if self.is_playing or self.is_paused:
+                self.voice_client.stop()
+            else:
+                raise PlayerInvalidState('Bot is not playing or paused')        
+            
     async def skip(self):
         if self.is_playing or self.is_paused:
             self.voice_client.stop()
