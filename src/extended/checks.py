@@ -1,6 +1,7 @@
 from discord.ext.commands import check, check_any
 
-from .errors import CheckAllFailure, MissingInChannel, SameChannelsError
+from .errors import CheckAllFailure, MissingInChannel, \
+    ExistingInChannel, SameChannelsError
 
 
 def check_all(*checks):
@@ -24,7 +25,7 @@ def check_all(*checks):
     return check(predicate)
 
 
-def author_in_channel():
+def author_in_any_channel():
     async def predicate(ctx):
         if ctx.author.voice is None:
             raise MissingInChannel('You have to be in the voice channel')
@@ -33,11 +34,22 @@ def author_in_channel():
     return check(predicate)
 
 
-def bot_in_channel():
+def bot_in_any_channel():
     async def predicate(ctx):
         if ctx.me.voice is None:
             raise MissingInChannel('Bot is not in any voice channel, use '
                                    f'"{ctx.bot.command_prefix}join"')
+
+        return True
+    return check(predicate)
+
+
+def bot_not_in_any_channel():
+    async def predicate(ctx):
+        if ctx.me.voice is not None:
+            raise ExistingInChannel('Bot already in a voice channel, '
+                                    'join the same voice channel and use '
+                                    f'"{ctx.bot.command_prefix}leave"')
 
         return True
     return check(predicate)
