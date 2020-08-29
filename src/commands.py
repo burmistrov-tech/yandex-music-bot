@@ -1,7 +1,7 @@
 import itertools
 
 from yandex_music import Client
-from discord.ext.commands import Bot, Cog, command
+from discord.ext.commands import Bot, Cog, command, before_invoke, after_invoke
 
 from .audio import Audio
 from .player import PlayerPool
@@ -19,25 +19,29 @@ class BotCommands(Cog):
         self.player_pool = PlayerPool(self.bot)
 
     @command(aliases=['j'])
-    @author_in_channel()
+    @author_in_any_channel()
     async def join(self, ctx):
         voice_channel = ctx.author.voice.channel
         if not ctx.voice_client:
             voice_client = await voice_channel.connect()
         else:
-            await voice_client.move_to(voice_channel)
+            await ctx.voice_client.move_to(voice_channel)
 
         await ctx.send(f'Successfully connected to {voice_channel}')
 
     @command(aliases=['l', 'exit'])
-    @check_all(author_in_channel(), bot_in_channel())
+    @check_all(author_in_any_channel(),
+               bot_in_any_channel(),
+               in_same_channel)
     async def leave(self, ctx):
         voice_channel = ctx.author.voice.channel
         await ctx.voice_client.disconnect()
         await ctx.send(f'Successfully disconnected from {voice_channel}')
 
     @command()
-    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
+    @check_all(author_in_any_channel(),
+               bot_in_any_channel(),
+               in_same_channel())
     async def volume(self, ctx, *args):
         value = float(args[0])
         player = self.player_pool.get(ctx.guild)
@@ -45,7 +49,9 @@ class BotCommands(Cog):
         await ctx.send(f'Changed the volume to {value}%')
 
     @command(aliases=['p'])
-    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
+    @before_invoke(join.callback)
+    @check_all(author_in_any_channel(),
+               bot_not_in_any_channel())
     async def play(self, ctx, *args):
         player = self.player_pool.get(ctx.guild)
         search_str = ' '.join(args)
@@ -56,7 +62,9 @@ class BotCommands(Cog):
         await ctx.send(f'{audio.full_title} is playing now')
 
     @command()
-    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
+    @before_invoke(join.callback)
+    @check_all(author_in_any_channel(),
+               bot_not_in_any_channel())
     async def playlist(self, ctx, *args):
         player = self.player_pool.get(ctx.guild)
         try:
@@ -77,35 +85,45 @@ class BotCommands(Cog):
                        f'{audio[0].full_title} is playing now')
 
     @command()
-    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
+    @check_all(author_in_any_channel(),
+               bot_in_any_channel(),
+               in_same_channel())
     async def pause(self, ctx):
         player = self.player_pool.get(ctx.guild)
         await player.pause()
         await ctx.send('Paused')
 
     @command(aliases=['r'])
-    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
+    @check_all(author_in_any_channel(),
+               bot_in_any_channel(),
+               in_same_channel())
     async def resume(self, ctx):
         player = self.player_pool.get(ctx.guild)
         await player.resume()
         await ctx.send('Resumed')
 
     @command()
-    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
+    @check_all(author_in_any_channel(),
+               bot_in_any_channel(),
+               in_same_channel())
     async def stop(self, ctx):
         player = self.player_pool.get(ctx.guild)
         await player.stop()
         await ctx.send('Stopped')
 
     @command(aliases=['n', 'next'])
-    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
+    @check_all(author_in_any_channel(),
+               bot_in_any_channel(),
+               in_same_channel())
     async def skip(self, ctx):
         player = self.player_pool.get(ctx.guild)
         await player.skip()
         await ctx.send('Next track')
 
     @command(aliases=['mix'])
-    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
+    @check_all(author_in_any_channel(),
+               bot_in_any_channel(),
+               in_same_channel())
     async def shuffle(self, ctx):
         player = self.player_pool.get(ctx.guild)
         await player.shuffle()
@@ -115,7 +133,9 @@ class BotCommands(Cog):
             'Tracks are mixed, here are the next 10 tracks:\n'+titles)
 
     @command()
-    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
+    @check_all(author_in_any_channel(),
+               bot_in_any_channel(),
+               in_same_channel())
     async def queue(self, ctx, amount: int = 10):
         player = self.player_pool.get(ctx.guild)
         queue, iter = await player.queue(amount), itertools.count(1)
@@ -126,7 +146,9 @@ class BotCommands(Cog):
         await ctx.send(f'Next {len(queue)} tracks:\n'+titles)
 
     @command(aliases=['c', 'clr'])
-    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
+    @check_all(author_in_any_channel(),
+               bot_in_any_channel(),
+               in_same_channel())
     async def clear(self, ctx):
         player = self.player_pool.get(ctx.guild)
         await player.clear()
