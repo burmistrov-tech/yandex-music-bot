@@ -11,7 +11,7 @@ with open('config.json', 'r') as f:
 TOKEN = data['discord']['token']
 BOT_PREFIX = data['discord']['prefix']
 LOGIN = data['yandex-music']['login']
-PASSWORD = data['yandex-music']['password'] 
+PASSWORD = data['yandex-music']['password']
 
 y_client = Client.fromCredentials(LOGIN, PASSWORD)
 bot = MusicBot(command_prefix=BOT_PREFIX, yandex_client=y_client)

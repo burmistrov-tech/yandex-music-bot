@@ -2,23 +2,27 @@ from discord.ext.commands import check, check_any
 
 from .errors import CheckAllFailure, MissingInChannel, SameChannelsError
 
+
 def check_all(*checks):
     unwrapped = []
     for wrapped in checks:
         try:
             pred = wrapped.predicate
         except AttributeError:
-            raise TypeError('%r must be wrapped by commands.check decorator' % wrapped) from None
+            raise TypeError('%r must be wrapped by commands.check \
+                decorator' % wrapped) from None
         else:
             unwrapped.append(pred)
 
     async def predicate(ctx):
         for func in unwrapped:
             if not await func(ctx):
-                raise CheckAllFailure(f'The check function {func.__name__} failed.')                      
+                raise CheckAllFailure(
+                    f'The check function {func.__name__} failed.')
         # if we're here, all checks passed
         return True
-    return check(predicate) 
+    return check(predicate)
+
 
 def author_in_channel():
     async def predicate(ctx):
@@ -28,13 +32,16 @@ def author_in_channel():
         return True
     return check(predicate)
 
+
 def bot_in_channel():
     async def predicate(ctx):
         if ctx.me.voice is None:
-            raise MissingInChannel(f'Bot in any channel, use "{ctx.bot.command_prefix}join" to connect')
+            raise MissingInChannel(f'Bot in any channel, use \
+                "{ctx.bot.command_prefix}"join" to connect')
 
         return True
     return check(predicate)
+
 
 def in_same_channel():
     async def predicate(ctx):
