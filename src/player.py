@@ -56,7 +56,7 @@ class Player():
 
     @property
     def is_empty(self) -> bool:
-        return len(self.audio_list) > 0
+        return len(self.audio_list) == 0
 
     async def play(self, audio: Audio):
         self.audio_list.append(audio)
