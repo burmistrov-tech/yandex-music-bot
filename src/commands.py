@@ -73,8 +73,8 @@ class BotCommands(Cog):
         audio = [Audio(t) for t in tracks]
 
         await player.playlist(audio)
-        await ctx.send(f'{len(tracks)} tracks added to the queue\n \
-                       {audio[0].full_title} is playing now')
+        await ctx.send(f'{len(tracks)} tracks added to the queue\n'
+                       f'{audio[0].full_title} is playing now')
 
     @command()
     @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
