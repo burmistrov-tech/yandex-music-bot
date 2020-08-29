@@ -101,7 +101,7 @@ class BotCommands(Cog):
     @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
     async def skip(self, ctx):
         player = self.player_pool.get(ctx.guild)
-        await player.next()
+        await player.skip()
         await ctx.send('Next track')
 
     @command(aliases=['mix'])
