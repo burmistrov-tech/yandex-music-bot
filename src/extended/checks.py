@@ -31,7 +31,7 @@ def author_in_channel():
 def bot_in_channel():
     async def predicate(ctx):
         if ctx.me.voice is None:
-            raise MissingInChannel(f'I am not in any channel, use "{ctx.bot.command_prefix}join" to connect')
+            raise MissingInChannel(f'Bot in any channel, use "{ctx.bot.command_prefix}join" to connect')
 
         return True
     return check(predicate)
