@@ -14,12 +14,12 @@ class SameChannelsError(CheckFailure):
 
 
 class PlayerError(CommandError):
-    def __init__(self, message, *args):
+    def __init__(self, message=None):
 
         if message is None:
-            super().__init__('Something wrong with player', args)
+            super().__init__('Something wrong with player')
         else:
-            super().__init__(message, args)
+            super().__init__(message)
 
 
 class PlayerInvalidState(PlayerError):
@@ -31,9 +31,9 @@ class PlayerInvalidVolume(PlayerError):
 
 
 class PlayerQueueEmpty(PlayerError):
-    def __init__(self, message=None, *args):
+    def __init__(self, message=None):
 
         if message is None:
-            super().__init__('No music in the queue', args)
+            super().__init__('No music in the queue')
         else:
-            super().__init__(message, args)
+            super().__init__(message)
