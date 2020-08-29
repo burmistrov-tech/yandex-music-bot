@@ -101,6 +101,12 @@ class BotCommands(Cog):
         await player.resume()
         await ctx.send('Resumed')
 
+    @command()
+    async def stop(self, ctx):
+        player = self.player_pool.get(ctx.guild)
+        await player.stop()
+        await ctx.send('Stopped')
+
     @command(aliases=['mix'])
     @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
     async def shuffle(self, ctx):

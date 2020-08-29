@@ -83,6 +83,10 @@ class Player():
         self.is_playing()
         self.voice_client.pause()
     
+    async def stop(self):
+        self.is_playing()
+        self.voice_client.stop()
+
     async def resume(self):
         self.is_paused()
         self.voice_client.resume()
