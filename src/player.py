@@ -3,11 +3,11 @@ import asyncio
 from typing import List
 
 from yandex_music import Track
-from discord import utils
 from discord.voice_client import VoiceClient
-from discord.ext.commands import Bot, check, CheckFailure
+from discord.ext.commands import Bot
 
 from .audio import Audio
+from .extended.errors import PlayerInvalidState, PlayerInvalidVolume, PlayerQueueEmpty, MissingInChannel
 
 class Player():        
     def __init__(self, voice_client: VoiceClient):
@@ -33,72 +33,79 @@ class Player():
     @volume.setter
     def volume(self, value: float):
         if not 0 <= value <= 100:                    
-            raise CheckFailure('The value have to be between 0 and 100')        
+            raise PlayerInvalidVolume('The value have to be between 0 and 100')        
         
         self._volume = value / 100
-        if self.is_playing(exception=False):
+        if self.is_playing():
             self.voice_client.source.volume = self.volume
 
     def toogle_next(self, error: Exception = None, *args):
         self._state.set()
         if error:
-            raise(error)                
+            raise(error)              
 
-    def is_playing(self, exception: bool = True):
-        if not self.voice_client.is_playing():
-            if exception:            
-                raise CheckFailure('Bot is not playing')
-            return False
-        return True
+    def is_playing(self) -> bool:
+        return self.voice_client.is_playing()
 
-    def is_paused(self, exception: bool = True):                    
-        if not self.voice_client.is_paused():
-            if exception:                
-                raise CheckFailure('Bot has not paused')            
-            return False
-        return True
+    def is_paused(self) -> bool:                    
+        return self.voice_client.is_paused()
 
-    def is_empty(self, exception: bool = True):        
-        if not len(self.audio_list):
-            if exception:
-                raise CheckFailure('No music in the queue')
-            return False
-        return True
+    def is_empty(self) -> bool:        
+        return len(self.audio_list) > 0
 
     async def play(self, audio: Audio):
         self.audio_list.append(audio)
-        if not self.is_playing(exception=False):
+
+        if not self.is_playing():
             await self._run()
 
     async def playlist(self, audio: List[Audio]):
         self.audio_list.extend(audio)
-        if not self.is_playing(exception=False):
+        
+        if not self.is_playing():
             await self._run()
 
     async def clear(self):
-        self.is_empty()
+        if self.is_empty():
+            raise PlayerQueueEmpty()
+
         self.audio_list.clear()
 
     async def pause(self):
-        self.is_playing()
+        if self.is_playing():
+            raise PlayerInvalidState('Bot is not playing')
+
         self.voice_client.pause()
     
     async def stop(self):
-        self.is_playing()
-        self.voice_client.stop()
+        try:
+            await self.clear()
+
+        if self.is_playing() or self.is_paused():
+            self.voice_client.stop()
+        else:
+            raise PlayerInvalidState('Bot is not playing or paused')        
 
     async def resume(self):
-        self.is_paused()
+        if self.is_paused():
+            raise PlayerInvalidState('Bot has not paused')
+
         self.voice_client.resume()
         
     async def skip(self):
-        self.voice_client.stop()        
-    
+        if self.is_playing() or self.is_paused():
+            self.voice_client.stop()
+        else:
+            raise PlayerInvalidState('Bot is not playing or paused')
+        
+           
     async def queue(self, amount: int = 10) -> List[Audio]:
         return self.audio_list[:amount]
 
     async def shuffle(self):
-        self.is_empty()
+        if self.is_empty():
+            raise PlayerQueueEmpty()
+
         random.shuffle(self.audio_list)
 
 class PlayerPool():
@@ -107,10 +114,11 @@ class PlayerPool():
         self.players = dict()        
 
     def get(self, guild, *args) -> Player:
-        voice_client = utils.get(self.bot.voice_clients, guild=guild)
+        from discord.utils import get
+        voice_client = get(self.bot.voice_clients, guild=guild)
 
-        if not voice_client:
-            raise ValueError("Bot not in the channel")
+        if voice_client is None:
+            raise MissingInChannel('Bot not in the channel')
 
         player = self.players.get(guild)        
         if not player or player.voice_client != voice_client:
