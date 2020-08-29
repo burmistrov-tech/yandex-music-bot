@@ -9,6 +9,10 @@ class MissingInChannel(CheckFailure):
     pass
 
 
+class ExistingInChannel(CheckFailure):
+    pass
+
+
 class SameChannelsError(CheckFailure):
     pass
 
