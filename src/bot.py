@@ -1,6 +1,6 @@
 from discord.ext.commands import Bot, DefaultHelpCommand
 
-from .extended.errors import CheckFailure
+from .extended.errors import CheckFailure, PlayerError
 
 class MusicBot(Bot):
     def __init__(self, command_prefix, help_command = None, description = None, **options):
@@ -16,7 +16,7 @@ class MusicBot(Bot):
     async def on_command_error(self, ctx, error):
         e = getattr(error, 'original', error)
         
-        if isinstance(e, CheckFailure):
+        if isinstance(e, (CheckFailure, PlayerError)):
             await ctx.send(e)
         else:
             raise e
