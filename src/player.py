@@ -87,7 +87,7 @@ class Player():
         self.is_paused()
         self.voice_client.resume()
         
-    async def next(self):
+    async def skip(self):
         self.voice_client.stop()        
     
     async def queue(self, amount: int = 10) -> List[Audio]:
