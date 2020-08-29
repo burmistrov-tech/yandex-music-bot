@@ -1,28 +1,30 @@
-from audio import Audio
+import random
+import asyncio
 from typing import List
-from asyncio import Event
-from random import shuffle
+
 from yandex_music import Track
 from discord import utils
 from discord.voice_client import VoiceClient
 from discord.ext.commands import Bot, check, CheckFailure
 
+from .audio import Audio
+
 class Player():        
     def __init__(self, voice_client: VoiceClient):
         self.voice_client = voice_client
         self.audio_list = list()
-        self.state = Event()
+        self._state = asyncio.Event()
         self._volume = 0.5 
 
     async def _run(self):
         while self.audio_list:
-            self.state.clear()   
+            self._state.clear()   
             audio = self.audio_list.pop(0)
             source = audio.get()
             source.volume = self.volume         
             self.voice_client.play(source, after = self.toogle_next)
             print(f'voice client начал проигрывание {audio.track.title}')
-            await self.state.wait() 
+            await self._state.wait() 
 
     @property
     def volume(self):
@@ -38,7 +40,7 @@ class Player():
             self.voice_client.source.volume = self.volume
 
     def toogle_next(self, error: Exception = None, *args):
-        self.state.set()
+        self._state.set()
         if error:
             raise(error)                
 
@@ -93,7 +95,7 @@ class Player():
 
     async def shuffle(self):
         self.is_empty()
-        shuffle(self.audio_list)
+        random.shuffle(self.audio_list)
 
 class PlayerPool():
     def __init__(self, bot: Bot):
