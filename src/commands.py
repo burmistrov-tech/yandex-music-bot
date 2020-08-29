@@ -35,6 +35,14 @@ class BotCommands(Cog):
         await ctx.voice_client.disconnect()
         await ctx.send(f'Successfully disconnected from {voice_channel}')
 
+    @command()
+    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
+    async def volume(self, ctx, *args):
+        value = float(args[0])
+        player = self.player_pool.get(ctx.guild)
+        player.volume = value   
+        await ctx.send(f'Changed the volume to {value}%')
+
     @command(aliases=['p'])
     @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
     async def play(self, ctx, *args):        
@@ -72,28 +80,6 @@ class BotCommands(Cog):
         await player.pause()
         await ctx.send('Paused')
 
-    @command()
-    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
-    async def volume(self, ctx, *args):
-        value = float(args[0])
-        player = self.player_pool.get(ctx.guild)
-        player.volume = value   
-        await ctx.send(f'Changed the volume to {value}%')
-
-    @command(aliases=['c', 'clr'])
-    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
-    async def clear(self, ctx): 
-        player = self.player_pool.get(ctx.guild)
-        await player.clear()
-        await ctx.send('The queue cleared')
-
-    @command(aliases=['n', 'next'])
-    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
-    async def skip(self, ctx):
-        player = self.player_pool.get(ctx.guild)
-        await player.next()
-        await ctx.send('Next track')
-
     @command(aliases=['r'])
     @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
     async def resume(self, ctx):
@@ -106,6 +92,13 @@ class BotCommands(Cog):
         player = self.player_pool.get(ctx.guild)
         await player.stop()
         await ctx.send('Stopped')
+
+    @command(aliases=['n', 'next'])
+    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
+    async def skip(self, ctx):
+        player = self.player_pool.get(ctx.guild)
+        await player.next()
+        await ctx.send('Next track')
 
     @command(aliases=['mix'])
     @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
@@ -126,3 +119,10 @@ class BotCommands(Cog):
 
         titles = '\n'.join(f'{next(iter)}. {i.full_title}' for i in queue)
         await ctx.send(f'Next {len(queue)} tracks:\n'+titles)
+
+    @command(aliases=['c', 'clr'])
+    @check_all(author_in_channel(), bot_in_channel(), in_same_channel())
+    async def clear(self, ctx): 
+        player = self.player_pool.get(ctx.guild)
+        await player.clear()
+        await ctx.send('The queue cleared')

@@ -16,6 +16,11 @@ class Player():
         self._state = asyncio.Event()
         self._volume = 0.5 
 
+    def toogle_next(self, error: Exception = None, *args):
+        self._state.set()
+        if error:
+            raise(error)
+
     async def _run(self):
         while self.audio_list:
             self._state.clear()   
@@ -38,11 +43,7 @@ class Player():
         self._volume = value / 100
         if self.is_playing():
             self.voice_client.source.volume = self.volume
-
-    def toogle_next(self, error: Exception = None, *args):
-        self._state.set()
-        if error:
-            raise(error)              
+           
     @property
     def is_playing(self) -> bool:
         return self.voice_client.is_playing()
@@ -63,13 +64,7 @@ class Player():
         self.audio_list.extend(audio)
         
         if not self.is_playing:
-            await self._run()
-
-    async def clear(self):
-        if self.is_empty:
-            raise PlayerQueueEmpty()
-
-        self.audio_list.clear()
+            await self._run()   
 
     async def pause(self):
         if self.is_playing:
@@ -77,36 +72,41 @@ class Player():
 
         self.voice_client.pause()
     
-    async def stop(self):
-        try:
-            await self.clear()
-
-        if self.is_playing() or self.is_paused():
-            self.voice_client.stop()
-        else:
-            raise PlayerInvalidState('Bot is not playing or paused')        
-
     async def resume(self):
         if self.is_paused:
             raise PlayerInvalidState('Bot has not paused')
 
         self.voice_client.resume()
+
+    async def stop(self):
+        try:
+            await self.clear()
+
+        if self.is_playing or self.is_paused:
+            self.voice_client.stop()
+        else:
+            raise PlayerInvalidState('Bot is not playing or paused')        
         
     async def skip(self):
         if self.is_playing or self.is_paused:
             self.voice_client.stop()
         else:
             raise PlayerInvalidState('Bot is not playing or paused')
-        
-           
-    async def queue(self, amount: int = 10) -> List[Audio]:
-        return self.audio_list[:amount]
 
     async def shuffle(self):
         if self.is_empty:
             raise PlayerQueueEmpty()
 
         random.shuffle(self.audio_list)
+
+    async def queue(self, amount: int = 10) -> List[Audio]:
+        return self.audio_list[:amount]
+        
+    async def clear(self):
+        if self.is_empty:
+            raise PlayerQueueEmpty()
+
+        self.audio_list.clear()
 
 class PlayerPool():
     def __init__(self, bot: Bot):
