@@ -35,7 +35,7 @@ class Player():
 
     @property
     def volume(self):
-        return self._volume
+        return self._volume * 100
 
     @volume.setter
     def volume(self, value: float):
