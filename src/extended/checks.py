@@ -10,8 +10,8 @@ def check_all(*checks):
         try:
             pred = wrapped.predicate
         except AttributeError:
-            raise TypeError('%r must be wrapped by commands.check'
-                            'decorator' % wrapped) from None
+            raise TypeError(
+                '%r must be wrapped by commands.check decorator' % wrapped) from None
         else:
             unwrapped.append(pred)
 
@@ -37,8 +37,8 @@ def author_in_any_channel():
 def bot_in_any_channel():
     async def predicate(ctx):
         if ctx.me.voice is None:
-            raise MissingInChannel('Bot is not in any voice channel, use '
-                                   f'"{ctx.bot.command_prefix}join"')
+            raise MissingInChannel(
+                f'Bot is not in any voice channel, use "{ctx.bot.command_prefix}join"')
 
         return True
     return check(predicate)
@@ -47,9 +47,9 @@ def bot_in_any_channel():
 def bot_not_in_any_channel():
     async def predicate(ctx):
         if ctx.me.voice is not None:
-            raise ExistingInChannel('Bot already in a voice channel, '
-                                    'join the same voice channel and use '
-                                    f'"{ctx.bot.command_prefix}leave"')
+            raise ExistingInChannel(
+                'Bot already in a voice channel, join the same voice channel and use '
+                f'"{ctx.bot.command_prefix}leave"')
 
         return True
     return check(predicate)
