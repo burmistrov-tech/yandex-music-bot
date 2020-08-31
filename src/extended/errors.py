@@ -9,7 +9,7 @@ class MissingInChannel(CheckFailure):
     pass
 
 
-class ExistingInChannel(CheckFailure):
+class ExistingInAnotherChannel(CheckFailure):
     pass
 
 

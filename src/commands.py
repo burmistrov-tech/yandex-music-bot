@@ -57,7 +57,7 @@ class BotCommands(Cog):
     @command(aliases=['p'])
     @before_invoke(join.callback)
     @check_all(author_in_any_channel(),
-               bot_not_in_any_channel())
+               bot_in_another_channel())
     async def play(self, ctx, *query):
         player = self.player_pool.get(ctx.guild)
 
@@ -72,7 +72,7 @@ class BotCommands(Cog):
     @command()
     @before_invoke(join.callback)
     @check_all(author_in_any_channel(),
-               bot_not_in_any_channel())
+               bot_in_another_channel())
     async def playlist(self, ctx, profile: str, kind: int = 3, *args):
         player = self.player_pool.get(ctx.guild)
 
