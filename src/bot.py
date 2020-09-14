@@ -3,7 +3,7 @@ from discord.ext.commands import Bot, DefaultHelpCommand
 from .extended.errors import CheckFailure, PlayerError
 
 
-class MusicBot(Bot):
+class YandexBot(Bot):
     def __init__(self, command_prefix, help_command=None,
                  description=None, **options):
 
