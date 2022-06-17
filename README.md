@@ -1,19 +1,19 @@
-<h1>[Alpha] Музыкальный discord бот для Yandex Music</h1>
-<p>В проекте используется <a href="https://github.com/Rapptz/discord.py">discord.py</a> 
-и неофицальная библиотека <a href="https://github.com/MarshalX/yandex-music-api">Yandex Music</a>.</br>
-Проигрывание треков происходит через ffmpeg, поэтому он должен быть заранее установлен.</p>
+<h1>[Alpha] Music discord bot for Yandex Music</h1>
+<p>The project uses <a href="https://github.com/Rapptz/discord.py">discord.py</a> 
+and an unofficial library <a href="https://github.com/MarshalX/yandex-music-api">Yandex Music</a>.</br>
+Tracks are played via ffmpeg, so it must be pre-installed.</p>
 <p>
-Реализованы следующие команды:
+The following commands are implemented:
   <ul>
-    <li>play [название трека/группы] - выбрать первый трек в поиске трека и начать его проигрывать</li>
-    <li>playlist [название профиля] [номер плейлиста] - проигрывать плейлист указанного пользователя</li>
-    <li>join - войти в канал</li>
-    <li>leave - выйти из канала</li>
-    <li>pause - остановить проигрывание</li>
-    <li>volume - выставить громкость бота (по умолчанию 50%)</li>
-    <li>clear - очистить очередь из треков</li>
-    <li>next - начать проигрывать следующий трек в очереди</li>
-    <li>resume - продолжить проигрывать трек</li>
-    <li>shuffle - перемешать очередь в случайном порядке</li>
+    <li>play [track/band name] - select the first track in the track search and start playing it</li>
+    <li>playlist [profile name] [playlist number] - play the playlist of the specified user</li>
+    <li>join - join the channel</li>
+    <li>leave - leave the channel</li>
+    <li>pause - pause the playback</li>
+    <li>volume - set the volume of the bot (by default 50%)</li>
+    <li>clear - clear the queue of tracks</li>
+    <li>next - take a new track to play from the queue</li>
+    <li>resume - continue playing the track</li>
+    <li>shuffle - mix the queue in random order</li>
   </ul> 
 </p>
