@@ -10,8 +10,10 @@ The following commands are implemented:
     <li>join - join the channel</li>
     <li>leave - leave the channel</li>
     <li>pause - pause the playback</li>
+    <li>volume - set the volume of the bot (by default 50%)</li>
     <li>clear - clear the queue of tracks</li>
     <li>next - take a new track to play from the queue</li>
-    <li>resume - continue playing the track</li>    
+    <li>resume - continue playing the track</li>
+    <li>shuffle - mix the queue in random order</li>
   </ul> 
 </p>
